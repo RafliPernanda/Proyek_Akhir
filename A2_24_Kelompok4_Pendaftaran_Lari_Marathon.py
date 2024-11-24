@@ -4,15 +4,15 @@ import pwinput
 import sys
 
 # Data pengguna dan pendaftaran
-pengguna = [] #List berisi [username, password] Pengguna
-pendaftaran = {}
+pengguna = [] #List berisi [username, password, role] Pengguna
+pendaftaran = {} #Dictionary untuk menyimpan 
 pengguna_login = None
 credit = ("Muhammad Rafli Pernanda", "Fariz Muwaffaq", "Elfin Sinaga")
 
 akunAdmin = [["admin", "admin"]]  # List berisi [username, password] admin
 
 # Daftar Lomba
-DaftarLomba = ["Beumbaan Vol. 1", "Belarian Hambat"] 
+DaftarLomba = ["Beumbaan Vol. 1", "Bagong Run"] 
 
 # Registrasi pengguna baru
 def registrasi_pengguna():
@@ -21,7 +21,6 @@ def registrasi_pengguna():
     while True:
         try:
             nama_pengguna = str(input("Masukkan nama pengguna: "))
-
         except KeyboardInterrupt:
             print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
             logout()
@@ -30,18 +29,16 @@ def registrasi_pengguna():
             logout()
         except TypeError:
             print("Terdapat Kesalahan saat Anda menginput, silahkan coba lagi")
-            return registrasi_pengguna
+            registrasi_pengguna()
         except ValueError:
             print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
-            return registrasi_pengguna
-
+            registrasi_pengguna()
         if not all(char.isalpha() or char.isspace() for char in nama_pengguna):
             print("Nama pengguna hanya boleh terdiri dari huruf dan spasi.")
             continue
         if len(nama_pengguna.strip()) < 3:  # Strip untuk menghindari spasi kosong
             print("Nama pengguna harus terdiri dari minimal 3 huruf.")
             continue
-
         # Memastikan username belum digunakan
         for user in pengguna:
             if user["username"] == nama_pengguna:
@@ -49,7 +46,6 @@ def registrasi_pengguna():
                 return
         try:
             kata_sandi = pwinput.pwinput("Masukkan kata sandi: ")
-
         except KeyboardInterrupt:
             print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
             logout()
@@ -58,29 +54,29 @@ def registrasi_pengguna():
             logout()
         except TypeError:
             print("Terdapat Kesalahan saat Anda menginput, silahkan coba lagi")
-            return registrasi_pengguna
+            registrasi_pengguna()
         except ValueError:
             print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
-            return registrasi_pengguna
-        
+            registrasi_pengguna()
         # Menambahkan pengguna baru ke dalam list
         pengguna.append({"username": nama_pengguna, "kata_sandi": kata_sandi, "role": "pengguna"})
-        
         print(f"Registrasi pengguna dengan username {nama_pengguna} berhasil! Silahkan Login.")
-        return menu_utama
+        menu_utama()
     
+#Error Handling Untuk Menghentikan Program 
 def logout():
     print("Terima kasih telah menggunakan program ini.")
     print(f"Program ini dibuat oleh {credit[0]}, {credit[1]}, dan {credit[2]}.")
     sys.exit()
 
+#Login Untuk Pengguna
 def login_pengguna():
     global pengguna_login
+    if len(pengguna) == 0:
+            print("Belum ada pengguna yang terdaftar. Silakan registrasi terlebih dahulu.")
+            menu_utama()
     Kesempatan = 0
     while True:
-        if len(pengguna) == 0:
-            print("Belum ada pengguna yang terdaftar. Silakan registrasi terlebih dahulu.")
-            return False
         Kesempatan += 1
         if Kesempatan > 3:
             print("Anda Telah Melakukan Kesalahan Sebanyak 3 Kali, Silahkan Mengulang Dari Menu Utama")
@@ -97,26 +93,24 @@ def login_pengguna():
                 logout()
             except TypeError:
                 print("Terdapat Kesalahan saat Anda menginput, silahkan coba lagi")
-                return login_pengguna
+                login_pengguna()
             except ValueError:
                 print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
-                return login_pengguna
-            
-
+                login_pengguna()
         for user in pengguna:
             if user["username"] == input_username and user["kata_sandi"] == input_pw:
                 pengguna_login = user
                 print(f"Login Berhasil, Selamat datang {input_username}!")
-                return True
+                menu_pengguna()
             else:
                 print("Nama pengguna atau kata sandi salah, silahkan coba lagi.")
 
+#Login Untuk Admin
 def login_admin():
     global pengguna_login
     try:
         input_username = input("Masukkan username admin: ")
         input_pw = pwinput.pwinput("Masukkan kata sandi admin: ")
-
     except KeyboardInterrupt:
         print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
         logout()
@@ -125,11 +119,10 @@ def login_admin():
         logout()
     except TypeError:
         print("Terdapat Kesalahan saat Anda menginput, silahkan coba lagi")
-        return login_admin
+        login_admin()
     except ValueError:
         print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
-        return login_admin
-
+        login_admin()
     for admin in akunAdmin:
         if admin[0] == input_username and admin[1] == input_pw:
             pengguna_login = {"username": admin[0], "role": "admin"}
@@ -137,68 +130,55 @@ def login_admin():
             menu_admin()
         else:
             print("Username atau kata sandi admin salah.")
-    return False
+            menu_utama()
 
-    
-#Menampilkan List Perlombaan
-def Perlombaan():
-    for ListLomba in DaftarLomba:
-        print(f"- {ListLomba}")
-
-# Pilih lomba dan kategori
+#Memilih Lomba Dan Kategori
 def MenuLomba():
-    print("==================================")
-    print("Pilih Lomba yang Ingin Diikuti:")
-    LihatLomba()  #Menampilkan Lomba Yang Tersedia
-    print("==================================")
-    
-    try:
-        PilihLomba = int(input("Masukkan nomor lomba yang ingin diikuti: "))
-        if 1 <= PilihLomba <= len(DaftarLomba):
-            Lomba = DaftarLomba[PilihLomba - 1]  #Memilih Lomba
-        else:
-            print("Pilihan Yang Anda Masukkan Salah! Silahkan Coba Lagi.")
-            return MenuLomba()
-    except KeyboardInterrupt:
-        print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
-        logout()
-    except EOFError:
-        print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
-        logout()
-    except TypeError:
-        print("Terdapat Kesalahan saat Anda menginput, silahkan coba lagi")
-        MenuLomba()
-    except ValueError:
-        print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
-        MenuLomba()
-
-    kategoriLari()
-    try:
-        PilihKategori = input("Pilih Kategori Lomba : ")
-    except KeyboardInterrupt:
-        print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
-        logout()
-    except EOFError:
-        print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
-        logout()
-    except TypeError:
-        print("Terdapat Kesalahan saat Anda menginput, silahkan coba lagi")
+    while True:
+        print("==================================")
+        print("Pilih Lomba yang Ingin Diikuti:")
+        LihatLomba()  #Menampilkan Lomba Yang Tersedia
+        print("==================================")
+        try:
+            PilihLomba = int(input("Masukkan nomor lomba yang ingin diikuti: "))
+            if 1 <= PilihLomba <= len(DaftarLomba):
+                Lomba = DaftarLomba[PilihLomba - 1]  #Memilih Lomba
+            else:
+                break
+        except KeyboardInterrupt:
+            print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
+            logout()
+        except EOFError:
+            print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
+            logout()
+        except TypeError:
+            break
+        except ValueError:
+            break
         kategoriLari()
-    except ValueError:
-        print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
-        kategoriLari()
-    if PilihKategori == "1":
-        Kategori = "5km"
-    elif PilihKategori == "2":
-        Kategori = "10km"
-    elif PilihKategori == "3":
-        Kategori = "Full Marathon"
-    else:
-        print("Pilihan Yang Anda Masukkan Salah! Silahkan Coba Lagi")
-        MenuLomba()
-    
-    return Lomba, Kategori
+        try:
+            PilihKategori = int(input("Pilih Kategori Lomba : "))
+            if PilihKategori == 1:
+                Kategori = "5km"
+            elif PilihKategori == 2:
+                Kategori = "10km"
+            elif PilihKategori == 3:
+                Kategori = "Full Marathon"
+            else:
+                break
+        except KeyboardInterrupt:
+            print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
+            logout()
+        except EOFError:
+            print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
+            logout()
+        except TypeError:
+            break
+        except ValueError:
+            break
+        return Lomba, Kategori
 
+#Menampilkan Kategori Lari
 def kategoriLari():
     tkategori = PrettyTable()
     tkategori.field_names = ["No.", "Kategori Lari"]
@@ -233,7 +213,7 @@ def EditPendaftaran(username):
         pendaftaran[username] = {"Lomba": Lomba, "Kategori": Kategori}
         print(f"Berhasil Mengubah Lomba Menjadi {Lomba} Dengan Kategori {Kategori}.")
     else:
-        print("Anda Belum Mendaftar Perlombaan.")
+        print("Anda Belum Mendaftar Lomba Apapun.")
         
 #Membatalkan Pendaftaran
 def BatalPendaftaran(username):
@@ -247,7 +227,7 @@ def BatalPendaftaran(username):
 #Menambahkan Lomba
 def TambahLomba():
     try:
-        LombaBaru = str(input("Masukkan Nama Lomba Baru : "))
+        LombaBaru = str(input("Masukkan Nama Lomba Marathon yang akan ditambah : "))
     except KeyboardInterrupt:
         print("Terdapat Kesalahan saat Anda menginput, Anda akan keluar dari program")
         logout()
@@ -260,13 +240,12 @@ def TambahLomba():
     except ValueError:
         print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
         TambahLomba()
-    
     if LombaBaru in DaftarLomba:
-        print("Lomba Sudah Ada, Silahkan Memasukkan Lomba Baru")
-        return TambahLomba()
+        print("Nama Lomba Sudah Ada, Silahkan Memasukkan Lomba Lain")
+        TambahLomba()
     else:
         DaftarLomba.append(LombaBaru)
-        print("Lomba Berhasil Ditambahkan")
+        print(f"Lomba {LombaBaru} Berhasil Ditambahkan")
         LihatLomba()
 
 #Melihat Perlombaan Untuk Admin
@@ -280,36 +259,35 @@ def LihatLomba():
             TabelLomba.add_row([i, lomba])
         print(TabelLomba)
         
-
+#Menampilkan Akun Yang Terdaftar
 def tampilkan_akun():
-    print("\n--- Akun yang Terdaftar ---")
+    print("\n----- Akun yang Terdaftar -----")
     TabelAkun = PrettyTable()
     TabelAkun.field_names = ["No.", "Nama Pengguna"]
-    
     if pengguna:
         for i, user in enumerate(pengguna, 1):
             TabelAkun.add_row([i, user['username']])
         print(TabelAkun)
     else:
-        print("Belum ada akun yang terdaftar.")
+        print("Belum Ada Akun Yang Terdaftar.")
 
+#Menampilkan Data Pendaftaran Para Peserta
 def tampilkan_data_pendaftaran():
     print("\n--- Data Pendaftaran Lari ---")
     TabelPendaftaran = PrettyTable()
     TabelPendaftaran.field_names = ["Nama Peserta", "Lomba", "Kategori"]
-    
     if pendaftaran:
         for username, data in pendaftaran.items():
             TabelPendaftaran.add_row([username, data['Lomba'], data['Kategori']])
         print(TabelPendaftaran)
     else:
-        print("Belum ada data pendaftaran.")
+        print("Belum Ada Peserta Yang Mendaftar Lomba.")
         
-#Mengambil Data Dan Kategori Lomba 
+#Menampilkan Data Untuk Peserta Lomba 
 def DataLomba(username):
     if username in pendaftaran:
         data = pendaftaran[username]
-        return f"Anda Terdaftar Pada Perlombaan {data['Lomba']} Dengan Kategori {data['Kategori']}."
+        print(f"Anda Terdaftar Pada Perlombaan {data['Lomba']} Dengan Kategori {data['Kategori']}.")
     else:
         return
     
@@ -318,20 +296,17 @@ def HapusLomba():
     if len(DaftarLomba) == 0:
         print("Belum Ada Lomba Yang Ditambahkan")
     else:
-        print("Daftar Perlombaan yang Tersedia:")
-        for i, lomba in enumerate(DaftarLomba, 1):
-            print(f"{i}. {lomba}")
+        LihatLomba()
         try:
             HapusData = int(input("Masukkan nomor lomba yang ingin dihapus: "))
             if 1 <= HapusData <= len(DaftarLomba):
                 lomba_dihapus = DaftarLomba.pop(HapusData - 1)
                 print(f"Lomba '{lomba_dihapus}' berhasil dihapus.")
-                
                 # Menghapus pendaftaran yang terkait dengan lomba yang dihapus
                 for username in list(pendaftaran.keys()):
                     if pendaftaran[username]['Lomba'] == lomba_dihapus:
                         del pendaftaran[username]
-                        print(f"Pendaftaran pengguna '{username}' untuk lomba '{lomba_dihapus}' telah dihapus.")
+                        print(f"Pendaftaran Pengguna {username} Untuk Lomba {lomba_dihapus} Telah Dihapus.")
             else:
                 print("Nomor lomba tidak valid. Silakan coba lagi.")
         except KeyboardInterrupt:
@@ -350,11 +325,11 @@ def HapusLomba():
 #Melihat Pendaftaran    
 def LihatPendaftaran(username):
     if cek_pendaftaran(username):
-        print(DataLomba(username))
+        DataLomba(username)
     else:
         print("Anda Belum Mendaftar Lomba.")
     
-# Fungsi untuk menu admin
+#Tampilan Menu Admin
 def menu_admin():
     while True:
         print("""\033[1;31;48m
@@ -390,10 +365,10 @@ def menu_admin():
             logout()
         except TypeError:
             print("Terdapat Kesalahan saat Anda menginput, silahkan coba lagi")
-            return menu_admin
+            menu_admin()
         except ValueError:
             print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
-            return menu_admin
+            menu_admin()
         if pilihan_admin == "1":
             tampilkan_akun()
         elif pilihan_admin == "2":
@@ -409,13 +384,14 @@ def menu_admin():
         else:
             print("Pilihan tidak valid, Masukkan angka 1/2/3/4/5/6")
             
+#Tampilan Menu Pengguna
 def menu_pengguna():
     while True:
         print("""\033[1;31;48m
-                    __    __     ______     __   __     __  __                                             
-                    /\ "-./  \   /\  ___\   /\ "-.\ \   /\ \/\ \                                            
-                    \ \ \-./\ \  \ \  __\   \ \ \-.  \  \ \ \_\ \                                           
-                    \ \_\ \ \_\  \ \_____\  \ \_\\"\_\  \ \_____\                                          
+                   __    __     ______     __   __     __  __                                             
+                  /\ "-./  \   /\  ___\   /\ "-.\ \   /\ \/\ \                                            
+                  \ \ \-./\ \  \ \  __\   \ \ \-.  \  \ \ \_\ \                                           
+                   \ \_\ \ \_\  \ \_____\  \ \_\\"\_\  \ \_____\                                          
                     \/_/  \/_/   \/_____/   \/_/ \/_/   \/_____/                                          
                                                                                         
  ______   ______     __   __     ______     ______     __  __     __   __     ______    
@@ -445,7 +421,7 @@ def menu_pengguna():
             elif PilihMenuPengguna == "4":
                 BatalPendaftaran(pengguna_login['username'])
             elif PilihMenuPengguna == "5":
-                break
+                menu_utama()
             else:
                 print("Pilihan tidak valid, Masukkan angka 1/2/3/4/5.")
         except KeyboardInterrupt:
@@ -456,12 +432,10 @@ def menu_pengguna():
             logout()
         except TypeError:
             print("Terdapat Kesalahan saat Anda menginput, silahkan coba lagi")
-            return menu_pengguna
         except ValueError:
             print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
-            return menu_pengguna
 
-# Fungsi untuk login
+# Fungsi Untuk Login
 def login():
     global pengguna_login
     print("Pilih jenis login:")
@@ -481,15 +455,15 @@ def login():
     except ValueError:
         print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
         login()
-
     if pilihan_login == 1:
         login_pengguna()
     elif pilihan_login == 2:
         login_admin()
     else:
         print("Pilihan tidak valid, Masukkan angka 1/2")
-        return login
+        login()
     
+#Tampilan Menu Utama
 def menu_utama(): 
     while True:
         print("""\033[1;31;48m
@@ -508,7 +482,6 @@ def menu_utama():
         tmenu_utama.add_row(["2.", "Login"])
         tmenu_utama.add_row(["3.", "Keluar"])
         print(tmenu_utama)
-
         try:
             pilihan = int(input("Pilih Menu : "))
             if pilihan == 1:
@@ -516,8 +489,8 @@ def menu_utama():
             elif pilihan == 2:
                 login()
                 if pengguna_login['role'] == "admin":
-                        menu_admin()
-                elif pengguna_login['role'] == "pengguna":    
+                    menu_admin()
+                else:    
                     menu_pengguna()
             elif pilihan == 3:
                 logout()
@@ -531,11 +504,10 @@ def menu_utama():
             logout()
         except TypeError:
             print("Terdapat Kesalahan saat Anda menginput, silahkan coba lagi")
-            continue
+            menu_utama()
         except ValueError:
             print("Terdapat kesalahan saat Anda menginput, silahkan coba lagi")
-            continue
+            menu_utama()
         
 # Program utama
-# while True:
 menu_utama()
